@@ -7,6 +7,7 @@ fi
 
 # Get argument
 p=$1
+p=$(echo "$p" | sed 's/\/$//')
 
 # Add and commit
 git add $p
