@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ -z "$1" ]; then
+  echo "usage: gc <filename>"
+  exit 1
+fi
+
 # Get argument
 p=$1
 
