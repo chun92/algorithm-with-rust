@@ -1,26 +1,63 @@
-const MAX: u64 = 10_000_000_000_000_000_000;
-const MAGNITUDE: usize = 19;
-fn add_big_numbers(a: u64, b: u64) -> (bool, u64) {
-    let sum = a + b;
+const MAX: u64 = 10;
+const MAGNITUDE: usize = 1;
+fn add_big_numbers(a: u64, b: u64, carry: u64) -> (u64, u64) {
+    let sum = a + b + carry;
     let overflow = sum >= MAX;
     if overflow {
-        (true, sum - MAX)
+        (1, sum)
     } else {
-        (false, sum)
+        (0, sum)
     }
 }
 
-fn read_line_as_strings() -> Vec<&str> {
+fn read_line_as_strings() -> Vec<String> {
     let mut line = String::new();
     std::io::stdin().read_line(&mut line).unwrap();
-    line.split_whitespace().collect()
+    line.split_whitespace().map(|s| s.to_string()).collect()
+}
+
+
+fn get_partial_string(my_string: &mut String) -> String {
+    let range = if my_string.len() >= MAGNITUDE {
+        my_string.len() - MAGNITUDE
+    } else {
+        0
+    };
+    my_string.drain(range..).collect::<String>()
 }
 
 fn main() {
-    let strings = read_line_as_strings();
-    let a = strings[0];
-    let b = strings[1];
+    let mut strings = read_line_as_strings();
+    let mut a = strings.remove(0);
+    let mut b = strings.remove(0);
+    let mut results: Vec<String> = Vec::new();
 
-    let a_len = a.len();
-    let b_len = b.len();
+    let mut carry: u64 = 0;
+    while a.len() != 0 || b.len() != 0 {
+        let a_partial = get_partial_string(&mut a);
+        let b_partial = get_partial_string(&mut b);
+
+        let a_num = a_partial.parse::<u64>().unwrap_or_default();
+        let b_num = b_partial.parse::<u64>().unwrap_or_default();
+        let (overflow, sum) = add_big_numbers(a_num, b_num, carry);
+        carry = overflow;
+        let mut sum_string = sum.to_string();
+        if carry != 0 {
+            sum_string.remove(0);
+        }
+        
+        results.push(sum_string);
+    }
+
+    if carry != 0 {
+        results.push(carry.to_string());
+    }
+
+    let result = results
+        .iter()
+        .rev()
+        .map(|s| s.as_str())
+        .collect::<String>();
+
+    println!("{}", result);
 }
