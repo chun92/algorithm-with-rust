@@ -1,12 +1,14 @@
-const MAX: u64 = 10;
-const MAGNITUDE: usize = 1;
-fn add_big_numbers(a: u64, b: u64, carry: u64) -> (u64, u64) {
+const MAX: u64 = 1_000_000_000_000_000_000;
+const MAGNITUDE: usize = 18;
+fn add_big_numbers(max_len: usize, a: u64, b: u64, carry: u64) -> (u64, String) {
     let sum = a + b + carry;
     let overflow = sum >= MAX;
     if overflow {
-        (1, sum)
+        let sum_string = format!("{:01$}", sum - MAX, max_len);
+        (1, sum_string)
     } else {
-        (0, sum)
+        let sum_string = format!("{:01$}", sum, max_len);
+        (0, sum_string)
     }
 }
 
@@ -17,13 +19,18 @@ fn read_line_as_strings() -> Vec<String> {
 }
 
 
-fn get_partial_string(my_string: &mut String) -> String {
+fn get_partial_string(my_string: &mut String) -> (String, usize) {
     let range = if my_string.len() >= MAGNITUDE {
         my_string.len() - MAGNITUDE
     } else {
         0
     };
-    my_string.drain(range..).collect::<String>()
+    let len = if my_string.len() >= MAGNITUDE {
+        MAGNITUDE
+    } else {
+        my_string.len()
+    };
+    (my_string.drain(range..).collect::<String>(), len)
 }
 
 fn main() {
@@ -34,19 +41,15 @@ fn main() {
 
     let mut carry: u64 = 0;
     while a.len() != 0 || b.len() != 0 {
-        let a_partial = get_partial_string(&mut a);
-        let b_partial = get_partial_string(&mut b);
+        let (a_partial, a_len) = get_partial_string(&mut a);
+        let (b_partial, b_len) = get_partial_string(&mut b);
 
         let a_num = a_partial.parse::<u64>().unwrap_or_default();
         let b_num = b_partial.parse::<u64>().unwrap_or_default();
-        let (overflow, sum) = add_big_numbers(a_num, b_num, carry);
+        let (overflow, sum) = add_big_numbers(std::cmp::max(a_len, b_len), a_num, b_num, carry);
         carry = overflow;
-        let mut sum_string = sum.to_string();
-        if carry != 0 {
-            sum_string.remove(0);
-        }
         
-        results.push(sum_string);
+        results.push(sum);
     }
 
     if carry != 0 {
