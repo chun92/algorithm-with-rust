@@ -1,0 +1,45 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'p9663'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=p9663",
+                    "--package=p9663"
+                ],
+                "filter": {
+                    "name": "p9663",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'p9663'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=p9663",
+                    "--package=p9663"
+                ],
+                "filter": {
+                    "name": "p9663",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
