@@ -1,14 +1,14 @@
 use std::{io::{stdout, BufWriter, Write}, collections::VecDeque};
 
 enum Command {
-    PUSH_FRONT(i32),
-    PUSH_BACK(i32),
-    POP_FRONT,
-    POP_BACK,
-    SIZE,
-    EMPTY,
-    FRONT,
-    BACK,
+    PushFront(i32),
+    PushBack(i32),
+    PopFront,
+    PopBack,
+    Size,
+    Empty,
+    Front,
+    Back,
 }
 
 fn read_line_as_strings() -> Vec<String> {
@@ -19,14 +19,14 @@ fn read_line_as_strings() -> Vec<String> {
 
 fn get_command(vec: Vec<String>) -> Command {
     match vec[0].as_str() {
-        "push_front" => Command::PUSH_FRONT(vec[1].parse::<i32>().unwrap()),
-        "push_back" => Command::PUSH_BACK(vec[1].parse::<i32>().unwrap()),
-        "pop_front" => Command::POP_FRONT,
-        "pop_back" => Command::POP_BACK,
-        "size" => Command::SIZE,
-        "empty" => Command::EMPTY,
-        "front" => Command::FRONT,
-        "back" => Command::BACK,
+        "push_front" => Command::PushFront(vec[1].parse::<i32>().unwrap()),
+        "push_back" => Command::PushBack(vec[1].parse::<i32>().unwrap()),
+        "pop_front" => Command::PopFront,
+        "pop_back" => Command::PopBack,
+        "size" => Command::Size,
+        "empty" => Command::Empty,
+        "front" => Command::Front,
+        "back" => Command::Back,
         _ => panic!("Invalid command"),
     }
 }
@@ -43,38 +43,38 @@ fn main() {
         let command = get_command(line);
 
         match command {
-            Command::PUSH_FRONT(x) => vec_deque.push_front(x),
-            Command::PUSH_BACK(x) => vec_deque.push_back(x),
-            Command::POP_FRONT => {
+            Command::PushFront(x) => vec_deque.push_front(x),
+            Command::PushBack(x) => vec_deque.push_back(x),
+            Command::PopFront => {
                 if vec_deque.is_empty() {
                     writeln!(out, "-1").unwrap();
                 } else {
                     writeln!(out, "{}", vec_deque.pop_front().unwrap()).unwrap();
                 }
             },
-            Command::POP_BACK => {
+            Command::PopBack => {
                 if vec_deque.is_empty() {
                     writeln!(out, "-1").unwrap();
                 } else {
                     writeln!(out, "{}", vec_deque.pop_back().unwrap()).unwrap();
                 }
             },
-            Command::SIZE => writeln!(out, "{}", vec_deque.len()).unwrap(),
-            Command::EMPTY => {
+            Command::Size => writeln!(out, "{}", vec_deque.len()).unwrap(),
+            Command::Empty => {
                 if vec_deque.is_empty() {
                     writeln!(out, "1").unwrap();
                 } else {
                     writeln!(out, "0").unwrap();
                 }
             }
-            Command::FRONT => {
+            Command::Front => {
                 if vec_deque.is_empty() {
                     writeln!(out, "-1").unwrap();
                 } else {
                     writeln!(out, "{}", vec_deque.front().unwrap()).unwrap();
                 }
             }
-            Command::BACK => {
+            Command::Back => {
                 if vec_deque.is_empty() {
                     writeln!(out, "-1").unwrap();
                 } else {
