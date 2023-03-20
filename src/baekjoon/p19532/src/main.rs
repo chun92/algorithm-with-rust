@@ -13,4 +13,3 @@ fn main() {
     let y = (c * d - a * f) / (b * d - a * e);
     println!("{} {}", x, y);
 }
-
