@@ -18,6 +18,17 @@ function check_current_directory_and_git_push_all() {
   done
 }
 
+base_dir=$(pwd)
+while [ "$base_dir" != "/" ]; do
+    if [ -d "${base_dir}/src" ] && [ -d "${base_dir}/src/baekjoon" ]; then
+        base_dir="${base_dir}/src/baekjoon"
+        break
+    fi
+    base_dir=$(dirname "$base_dir")
+done
+
+cd "$base_dir"
+
 if [ -z "$1" ]; then
   check_current_directory_and_git_push_all
 else
