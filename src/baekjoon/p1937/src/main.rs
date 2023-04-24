@@ -11,7 +11,7 @@ fn dp(graph: &Vec<Vec<usize>>, memo: &mut Vec<Vec<usize>>, visited: &mut Vec<Vec
         return memo[i][j];
     }
 
-    let mut res = 0;
+    let mut res = 1;
     visited[i][j] = true;
     let current = graph[i][j];
 
@@ -53,15 +53,13 @@ fn main() {
     }
 
     let mut res = 0;
-    let mut indexes = (0, 0);
     for i in 0..n {
         for j in 0..n {
             if memo[i][j] > res {
                 res = memo[i][j];
-                indexes = (i, j);
             }
         }
     }
 
-    println!("{}, ({}, {})", res, indexes.0, indexes.1);
+    println!("{}", res);
 }
