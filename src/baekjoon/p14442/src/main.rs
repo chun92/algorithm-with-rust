@@ -14,77 +14,68 @@ fn read_line_as_string() -> String {
     line.trim().to_string()
 }
 
-fn bfs(graph: &mut Vec<Vec<Vec<usize>>>, n: usize, m: usize, h: usize) -> i32 {
+fn bfs(graph: &Vec<Vec<usize>>, n: usize, m: usize, h: usize) -> i32 {
     let mut queue = VecDeque::new();
     queue.push_back((0, 0, 0));
     let mut ans = 1;
-    let mut visited = vec![vec![vec![false; h + 1]; m]; n];
-    visited[0][0][0] = true;
+    let mut visited = vec![vec![0_u16; m]; n];
+    visited[0][0] |= 1 << 15;
 
     while !queue.is_empty() {
         let mut next_queue = VecDeque::new();
         while !queue.is_empty() {
             let (i, j, k) = queue.pop_front().unwrap();
             if i == n - 1 && j == m - 1 {
-                return ans as i32;
+                return ans;
             }
-            if k == h {
-                if i > 0 && graph[i - 1][j][0] == 0 && !visited[i - 1][j][k] {
-                    visited[i - 1][j][k] = true;
-                    next_queue.push_back((i - 1, j, k));
-                }
-                if i < n - 1 && graph[i + 1][j][0] == 0 && !visited[i + 1][j][k] {
-                    visited[i + 1][j][k] = true;
-                    next_queue.push_back((i + 1, j, k));
-                }
-                if j > 0 && graph[i][j - 1][0] == 0 && !visited[i][j - 1][k] {
-                    visited[i][j - 1][k] = true;
-                    next_queue.push_back((i, j - 1, k));
-                }
-                if j < m - 1 && graph[i][j + 1][0] == 0 && !visited[i][j + 1][k] {
-                    visited[i][j + 1][k] = true;
-                    next_queue.push_back((i, j + 1, k));
-                }
-            } else {
+            
+            let check_and_push = |i: usize, j: usize, k: usize,
+                visited: &mut Vec<Vec<u16>>,
+                next_queue: &mut VecDeque<(usize, usize, usize)>,
+                break_wall: bool| {
+                    let break_wall = if break_wall { 1 } else { 0 };
+                    if graph[i][j] != break_wall {
+                        return;
+                    }
+
+                    let k = if break_wall == 1 { k + 1 } else { k };
+                            
+                    let mut has_visited = false;
+                    let bitmask = 1 << (15 - k);
+                    if visited[i][j] >= bitmask {
+                        has_visited = true;
+                    }
+                    
+                    if !has_visited {
+                        visited[i][j] |= bitmask;
+                        next_queue.push_back((i, j, k));
+                    }
+            };
+
+            if i > 0 {
+                check_and_push(i - 1, j, k, &mut visited, &mut next_queue, false);
+            }
+            if i < n - 1 {
+                check_and_push(i + 1, j, k, &mut visited, &mut next_queue, false);
+            }
+            if j > 0 {
+                check_and_push(i, j - 1, k, &mut visited, &mut next_queue, false);
+            }
+            if j < m - 1 {
+                check_and_push(i, j + 1, k, &mut visited, &mut next_queue, false);
+            }
+            if k != h {
                 if i > 0 {
-                    if graph[i - 1][j][0] == 0 && !visited[i - 1][j][k] {
-                        visited[i - 1][j][k] = true;
-                        next_queue.push_back((i - 1, j, k));
-                    }
-                    if graph[i - 1][j][0] == 1 && !visited[i - 1][j][k + 1] {
-                        visited[i - 1][j][k + 1] = true;
-                        next_queue.push_back((i - 1, j, k + 1));
-                    }
+                    check_and_push(i - 1, j, k, &mut visited, &mut next_queue, true);
                 }
                 if i < n - 1 {
-                    if graph[i + 1][j][0] == 0 && !visited[i + 1][j][k] {
-                        visited[i + 1][j][k] = true;
-                        next_queue.push_back((i + 1, j, k));
-                    }
-                    if graph[i + 1][j][0] == 1 && !visited[i + 1][j][k + 1] {
-                        visited[i + 1][j][k + 1] = true;
-                        next_queue.push_back((i + 1, j, k + 1));
-                    }
+                    check_and_push(i + 1, j, k, &mut visited, &mut next_queue, true);
                 }
                 if j > 0 {
-                    if graph[i][j - 1][0] == 0 && !visited[i][j - 1][k] {
-                        visited[i][j - 1][k] = true;
-                        next_queue.push_back((i, j - 1, k));
-                    }
-                    if graph[i][j - 1][0] == 1 && !visited[i][j - 1][k + 1] {
-                        visited[i][j - 1][k + 1] = true;
-                        next_queue.push_back((i, j - 1, k + 1));
-                    }
+                    check_and_push(i, j - 1, k, &mut visited, &mut next_queue, true);
                 }
                 if j < m - 1 {
-                    if graph[i][j + 1][0] == 0 && !visited[i][j + 1][k] {
-                        visited[i][j + 1][k] = true;
-                        next_queue.push_back((i, j + 1, k));
-                    }
-                    if graph[i][j + 1][0] == 1 && !visited[i][j + 1][k + 1] {
-                        visited[i][j + 1][k + 1] = true;
-                        next_queue.push_back((i, j + 1, k + 1));
-                    }
+                    check_and_push(i, j + 1, k, &mut visited, &mut next_queue, true);
                 }
             }
         }
@@ -106,12 +97,9 @@ fn main() {
         let vec = s
             .chars()
             .map(|c| {
-                let mut vec = Vec::new();
-                vec.push(c.to_digit(10).unwrap() as usize);
-                vec.push(0);
-                vec
+                c.to_digit(10).unwrap() as usize
             })
-            .collect::<Vec<Vec<usize>>>();
+            .collect::<Vec<usize>>();
         graph.push(vec);
     }
 
