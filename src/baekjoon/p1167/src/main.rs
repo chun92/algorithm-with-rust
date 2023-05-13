@@ -1,6 +1,5 @@
 use std::io;
 use std::collections::VecDeque;
-use std::cmp;
 
 fn dfs(graph: &Vec<Vec<(usize, i32)>>, start: usize) -> (usize, i32) {
     let mut visited = vec![false; graph.len()];
