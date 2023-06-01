@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+use std::collections::HashMap;
 use std::io::{stdin, stdout, BufWriter, Write};
 
 fn read_line_as_numbers() -> Vec<usize> {
@@ -8,31 +10,38 @@ fn read_line_as_numbers() -> Vec<usize> {
         .collect()
 }
 
-const MAX: f64 = 1e9;
-const EPS: f64 = 1e-9;
+fn solve(start: usize, end: usize, graph: &Vec<Vec<(usize, usize, usize)>>, enters: &mut Vec<usize>) -> f64 {
+    let mut memo: Vec<HashMap<usize, usize>> = vec![HashMap::new(); graph.len()];
 
-fn solve(start: usize, end: usize, graph: &Vec<Vec<(usize, usize, usize)>>) -> f64 {
-    let n = graph.len();
-    let mut l = 0.0;
-    let mut r = MAX;
-    let mut f = vec![0.0; n];
+    let mut queue = VecDeque::new();
+    queue.push_back(start);
+    memo[start].insert(0, 0);
 
-    while r - l > EPS {
-        let mid = (l + r) / 2.0;
-        for i in 0..n {
-            f[i] = if i == start { 0.0 } else { MAX };
-            for &(j, d, e) in &graph[i] {
-                f[i] = f[i].min(f[j] + d as f64 * (e as f64 - mid));
+    while let Some(idx) = queue.pop_front() {
+        for (v, e, d) in &graph[idx] {
+            enters[*v] -= 1;
+            if enters[*v] == 0 {
+                queue.push_back(*v);
             }
-        }
-        if f[end] <= 0.0 {
-            r = mid;
-        } else {
-            l = mid;
+
+            let costs_with_distances = memo[idx].clone();
+
+            for (&distance, &cost) in &costs_with_distances {
+                let new_cost = cost + e;
+                let new_distance = distance + d;
+
+                let costs_with_distances = memo[*v].entry(new_distance).or_insert(new_cost);
+                *costs_with_distances = (*costs_with_distances).min(new_cost);
+            }
         }
     }
 
-    l
+    let mut result = f64::MAX;
+    for (d, e) in memo[end].iter() {
+        result = result.min((*e as f64) / (*d as f64));
+    }
+
+    result
 }
 
 fn main() {
@@ -51,6 +60,7 @@ fn main() {
         };
 
         let mut graph = vec![vec![]; n];
+        let mut enters = vec![0; n];
 
         for _ in 0..r {
             let (u, v, s, d) = {
@@ -65,8 +75,9 @@ fn main() {
             };
 
             graph[u].push((v, e, d));
+            enters[v] += 1;
         }
 
-        writeln!(output, "{:.2}", solve(start, end, &graph)).unwrap();
+        writeln!(output, "{:.2}", solve(start, end, &graph, &mut enters)).unwrap();
     }
 }
