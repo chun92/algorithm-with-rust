@@ -1,5 +1,3 @@
-use std::collections::VecDeque;
-use std::collections::HashMap;
 use std::io::{stdin, stdout, BufWriter, Write};
 
 fn read_line_as_numbers() -> Vec<usize> {
@@ -10,38 +8,48 @@ fn read_line_as_numbers() -> Vec<usize> {
         .collect()
 }
 
-fn solve(start: usize, end: usize, graph: &Vec<Vec<(usize, usize, usize)>>, enters: &mut Vec<usize>) -> f64 {
-    let mut memo: Vec<HashMap<usize, usize>> = vec![HashMap::new(); graph.len()];
+fn dfs(v: usize, graph: &Vec<Vec<(usize, f64, f64)>>, memo: &mut Vec<f64>, k: f64) -> f64 {
+    if memo[v] != f64::MAX {
+        return memo[v];
+    }
 
-    let mut queue = VecDeque::new();
-    queue.push_back(start);
-    memo[start].insert(0, 0);
-
-    while let Some(idx) = queue.pop_front() {
-        for (v, e, d) in &graph[idx] {
-            enters[*v] -= 1;
-            if enters[*v] == 0 {
-                queue.push_back(*v);
-            }
-
-            let costs_with_distances = memo[idx].clone();
-
-            for (&distance, &cost) in &costs_with_distances {
-                let new_cost = cost + e;
-                let new_distance = distance + d;
-
-                let costs_with_distances = memo[*v].entry(new_distance).or_insert(new_cost);
-                *costs_with_distances = (*costs_with_distances).min(new_cost);
-            }
+    if v == 0 {
+        memo[v] = 0.0;
+        return memo[v];
+    }
+    
+    let mut min = f64::MAX;
+    for (u, e, d) in &graph[v] {
+        let f = d * (e - k);
+        let effort = dfs(*u, graph, memo, k) + f;
+        if effort < min {
+            min = effort;
         }
     }
 
-    let mut result = f64::MAX;
-    for (d, e) in memo[end].iter() {
-        result = result.min((*e as f64) / (*d as f64));
+    memo[v] = min;
+    memo[v]
+}
+
+const EPS: f64 = 0.0001;
+
+fn binary_search(left: f64, right: f64, graph: &Vec<Vec<(usize, f64, f64)>>) -> f64 {
+    let mut left = left;
+    let mut right = right;
+    let mut mid = (left + right) / 2.0;
+
+    while right - left > EPS {
+        let mut memo: Vec<f64> = vec![f64::MAX; graph.len()];
+        let result = dfs(graph.len() - 1, graph, &mut memo, mid) <= 0.0;
+        if result {
+            right = mid;
+        } else {
+            left = mid;
+        }
+        mid = (left + right) / 2.0;
     }
 
-    result
+    mid
 }
 
 fn main() {
@@ -60,7 +68,8 @@ fn main() {
         };
 
         let mut graph = vec![vec![]; n];
-        let mut enters = vec![0; n];
+        let mut min_effort = f64::MAX;
+        let mut max_effort = f64::MIN;
 
         for _ in 0..r {
             let (u, v, s, d) = {
@@ -69,15 +78,18 @@ fn main() {
             };
 
             let e = if s <= 60 {
-                d * (70 - s)
+                70 - s
             } else {
-                d * (s - 50)
+                10
             };
+            let e = e as f64;
+            let d = d as f64;
+            min_effort = min_effort.min(e);
+            max_effort = max_effort.max(e);
 
-            graph[u].push((v, e, d));
-            enters[v] += 1;
+            graph[v].push((u, e, d));
         }
 
-        writeln!(output, "{:.2}", solve(start, end, &graph, &mut enters)).unwrap();
+        writeln!(output, "{:.2}", binary_search(min_effort, max_effort, &graph)).unwrap();
     }
 }
