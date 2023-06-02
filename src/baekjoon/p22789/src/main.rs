@@ -62,7 +62,7 @@ fn main() {
             (line[0], line[1])
         };
 
-        let (start, end) = {
+        let (_start, _end) = {
             let line = read_line_as_numbers();
             (line[0] - 1, line[1] - 1)
         };
