@@ -21,7 +21,6 @@ struct Frames {
     frames: Vec<Option<Frame>>,
     count: usize,
     remaining: usize,
-    possible: usize,
     current: String,
     result: Vec<String>,
 }
@@ -32,7 +31,6 @@ impl Frames {
             frames: vec![None; 26],
             count: 0,
             remaining: 0,
-            possible: 0,
             current: String::new(),
             result: Vec::new(),
         }
@@ -54,7 +52,8 @@ impl Frames {
         }
     }
 
-    fn calculate_possible(&mut self, graph: &Vec<Vec<char>>) {
+    fn calculate_possible(&mut self, graph: &Vec<Vec<char>>) -> usize {
+        let mut possible = 0;
         for i in 0..26 {
             let index = 1 << i;
             if self.remaining & index == 0 {
@@ -95,9 +94,10 @@ impl Frames {
             }
 
             if result {
-                self.possible |= index;
+                possible |= index;
             }
         }
+        possible
     }
 
     fn remove_frame(&self, index: usize, graph: &mut Vec<Vec<char>>) {
@@ -124,10 +124,10 @@ impl Frames {
             return;
         }
 
-        self.calculate_possible(graph);
+        let possible = self.calculate_possible(graph);
         for i in 0..26 {
             let index = 1 << i;
-            if self.possible & index == 0 {
+            if possible & index == 0 {
                 continue;
             }
             let graph = &mut graph.clone();
@@ -140,7 +140,7 @@ impl Frames {
         }
     }
 
-    fn print_all(&self) {
+    fn _print_all(&self) {
         self.frames
         .iter()
         .enumerate()
@@ -151,43 +151,51 @@ impl Frames {
             }
         });
     }
-
-    fn print_possible(&self) {
-        for i in 0..26 {
-            let index = 1 << i;
-            if self.possible & index != 0 {
-                println!("{}", ('A' as u8 + i as u8) as char);
-            }
-        }
-    }
 }
 
-fn read_line_as_string() -> String {
-    let mut input = String::new();
-    std::io::stdin().read_line(&mut input).unwrap();
-    input.trim().to_string()
+fn read_line_as_string_check_eof() -> Option<String> {
+    let mut line = String::new();
+    let result = std::io::stdin().read_line(&mut line);
+    if result.is_err() {
+        return None;
+    }
+    let result = result.unwrap();
+    if result == 0 {
+        return None;
+    }
+    Some(line.trim().to_string())
 }
 
 fn main() {
-    let n = read_line_as_string().parse::<usize>().unwrap();
-    let m = read_line_as_string().parse::<usize>().unwrap();
-
-    let mut frames = Frames::new();
-    let mut graph = vec![vec!['.'; m]; n];
-    for y in 0..n {
-        let line = read_line_as_string();
-        for (x, character) in line.chars().enumerate() {
-            if character == '.' {
-                continue;
+        loop {
+            let input_start = read_line_as_string_check_eof();
+            if input_start.is_none() {
+                break;
             }
-            frames.update_frame(character, x, y);
-            graph[y][x] = character;
-        }
-    }
+        let n = input_start.unwrap().parse::<usize>().unwrap();
+        let m = read_line_as_string_check_eof().unwrap().parse::<usize>().unwrap();
 
-    frames.solve(&graph);
-    frames.result.sort();
-    for result in frames.result {
-        println!("{}", result);
+        let mut frames = Frames::new();
+        let mut graph = vec![vec!['.'; m]; n];
+        for y in 0..n {
+            let line = read_line_as_string_check_eof().unwrap();
+            for (x, character) in line.chars().enumerate() {
+                if character == '.' {
+                    continue;
+                }
+                frames.update_frame(character, x, y);
+                graph[y][x] = character;
+            }
+        }
+
+        frames.solve(&graph);
+        let mut result = frames.result
+            .iter()
+            .map(|result| result.chars().rev().collect::<String>())
+            .collect::<Vec<String>>();
+        result.sort();
+        for result in result {
+            println!("{}", result);
+        }
     }
 }
