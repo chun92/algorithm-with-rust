@@ -7,9 +7,27 @@ fn read_line_as_numbers() -> Vec<i32> {
 }
 
 fn calculate_num_of_intersection(x1: f64, y1: f64, r1: f64, x2: f64, y2: f64, r2: f64) -> i32 {
-    if x1 == x2 && y1 == y2{
+    if x1 == x2 && y1 == y2 {
         if r1 == r2 {
-            -1
+            if r1 == 0.0 {
+                1
+            } else {
+                -1
+            }
+        } else {
+            0
+        }
+    } else if r1 == 0.0 {
+        let dist = ((x1 - x2).powi(2) + (y1 - y2).powi(2)).sqrt();
+        if dist == r2 {
+            1
+        } else {
+            0
+        }
+    } else if r2 == 0.0 {
+        let dist = ((x1 - x2).powi(2) + (y1 - y2).powi(2)).sqrt();
+        if dist == r1 {
+            1
         } else {
             0
         }
