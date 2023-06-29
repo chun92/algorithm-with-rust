@@ -24,8 +24,7 @@ impl SquareMatrix {
     }
 
     fn multifly(&self, other: &Self) -> Self {
-        // assert_eq!(self.size, other.size);
-        let mut result = Self::new(self.size);
+        // assert_eq!(self.size, other.size);\
         for i in 0..self.size {
             for j in 0..self.size {
                 for k in 0..self.size {
