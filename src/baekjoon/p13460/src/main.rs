@@ -1,5 +1,3 @@
-use std::collections::VecDeque;
-
 fn read_line_as_numbers() -> Vec<usize> {
     let mut line = String::new();
     std::io::stdin().read_line(&mut line).unwrap();
@@ -102,6 +100,37 @@ fn move_ball(board: &Vec<Vec<char>>, red: (usize, usize), blue: (usize, usize), 
     }
 }
 
+fn dfs(board: &Vec<Vec<char>>, red: (usize, usize), blue: (usize, usize), dir: usize, depth: usize) -> (bool, usize) {
+    if depth == 11 {
+        return (false, 11);
+    }
+
+    let (red, blue, success_red, success_blue) = move_ball(board, red, blue, dir);
+    if success_red && !success_blue {
+        return (true, depth + 1);
+    }
+    if success_blue {
+        return (false, 11);
+    }
+
+    let mut min_depth = 11;
+    for i in 0..4 {
+        if i == dir {
+            continue;
+        }
+        let (success, depth) = dfs(board, red, blue, i, depth + 1);
+        if success {
+            min_depth = std::cmp::min(min_depth, depth);
+        }
+    }
+
+    if min_depth == 11 {
+        (false, 11)
+    } else {
+        (true, min_depth)
+    }
+}
+
 fn main() {
     let (n, m) = {
         let v = read_line_as_numbers();
@@ -126,30 +155,18 @@ fn main() {
         }
     }
 
-    let mut queue = VecDeque::new();
-    queue.push_back((red, blue, 0));
-    queue.push_back((red, blue, 1));
-    queue.push_back((red, blue, 2));
-    queue.push_back((red, blue, 3));
+    let result1 = dfs(&board, red, blue, 0, 0);
+    let result2 = dfs(&board, red, blue, 1, 0);
+    let result3 = dfs(&board, red, blue, 2, 0);
+    let result4 = dfs(&board, red, blue, 3, 0);
+    let min = std::cmp::min(
+        std::cmp::min(result1.1, result2.1),
+        std::cmp::min(result3.1, result4.1),
+    );
 
-    for i in 1..=10 {
-        let mut next_queue = VecDeque::new();
-        while let Some((red, blue, dir)) = queue.pop_front() {
-            let (red, blue, success_red, success_blue) = move_ball(&board, red, blue, dir);
-            if success_red && !success_blue {
-                println!("{}", i);
-                return;
-            }
-            if success_blue {
-                continue;
-            }
-            next_queue.push_back((red, blue, 0));
-            next_queue.push_back((red, blue, 1));
-            next_queue.push_back((red, blue, 2));
-            next_queue.push_back((red, blue, 3));
-        }
-        queue = next_queue;
+    if min == 11 {
+        println!("-1");
+    } else {
+        println!("{}", min);
     }
-
-    println!("-1");
 }
